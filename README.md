@@ -34,18 +34,25 @@ The information is extracted from the European Nucleotide Archive (ENA) taxonomy
 The result is a compacted (serialized) dictionnary for the Julia language (taxonomy.gz.ser) and for Python (the pickle version taxonomy.gz.pkl). 
 Basicallly the key of the dictionnary is the NCBI TaxId and the value is a vector of strings ```uniquedict[taxID]=[hierarchie,localdict["CODE"]]```
 ```2052056 => ["Bacteria-Pseudomonadota-Gammaproteobacteria-Enterobacterales-Erwiniaceae-Pantoea-Pantoea_phytobeneficialis","11"]```
+```76629   => ["Bacteria-Mycoplasmatota-no_class-Mycoplasmoidales-Metamycoplasmataceae-Mycoplasmopsis-Mycoplasmopsis_gallopavonis","4"]```
 This enable an easy construction of the Fasta commentary.
 
 ## Running
 
-There is currently only one (mandatory) option ```-a``` with :
+There is currently only one (mandatory) option "```-a```ction" with :
 
 - "d" download from ENA
 - "x" extract and construct
-- "a" download extract and construct
+- "a" download extract and construct "a" for "all"
+- "l" reading the dictionary (big output ! - only to test- )
 
 And the target (usualy "taxonomy.gz")
 
-```julia taxDBextract.jl -a x path_to_taxonomy.gz```
+```julia taxDBextract.jl -a a path_to_taxonomy.gz``` (action = all)
 
 And in most of our programs taxDBextract.jl is called from Python as this was the main programming language before 2023.
+
+## The program is not perfect :)
+
+This is rather ugly program being the first attempt I made in Julia so do not be affraid.
+Of course the commentaries in the program are mainly in french. 

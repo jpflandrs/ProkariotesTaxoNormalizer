@@ -229,7 +229,14 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
             #remplissage dictionnaire
             localdict["rank0"] = uppercase(rangNiveau0)
             localdict["nomSp0"] = Niveau0Nom
-            localdict["CODE"] = recupValeur(line," geneticCode=\"","\">",false) #STRIP FAIT #### bug à cause de plastIdGeneticCode dans 3 cas sur 180000 génomes
+            #problème des faux codes !
+            # geneticCode="11"> <-correct
+            # geneticCode="11" plastIdGeneticCode="11" 
+            tmpcod::String=recupValeur(line," geneticCode=\"","\"",false)
+            #println(tmpcod)
+            #occursin("GeneticCode",recupValeur(line," geneticCode=\"","\">",false)) ? tmpcod=recupValeur(line," geneticCode=\"","\" ",false) : tmpcod=recupValeur(line," geneticCode=\"","\">",false)
+            localdict["CODE"] = tmpcod #STRIP FAIT #### bug à cause de plastIdGeneticCode dans 3 cas sur 180000 génomes
+            # geneticCode="11" plastIdGeneticCode="11" (taxId="2768739")
             continu=true
             
         # LA LIGNE DE TETE 0
@@ -460,9 +467,13 @@ function analyse(inputfile)
     uniquedict=Dict{}()
     uniquedict=deserialize(inputfile)
     println(length(uniquedict))
-    reduitDict=Dict{}()
+    # reduitDict=Dict{}()
     println("taxId: 1852021 est ",uniquedict["1852021"])
-    pickle.dump(uniquedict,open(replace(inputfile,".ser" => "~.pkl"), "w"))
+    println("145391 est ",uniquedict["145391"])
+    for i in keys(uniquedict)
+        println(i,"  ",uniquedict[i])
+    end
+    # pickle.dump(uniquedict,open(replace(inputfile,".ser" => "~.pkl"), "w"))
 end
 
 function expanddic(inputfile)
@@ -501,15 +512,15 @@ end
             telecharge(jobin)
         elseif args["action"] == 'x' #whole process
             println(stderr, "Processing " * jobin * "...  ",args["action"])
-            println("copie sur web")
             xtracProTax(jobin)
-            #analyse(jobin*(".ser"))
         elseif args["action"] == 'a' #whole process
             println(stderr, "Processing " * jobin * "...  ",args["action"])
             println("copie sur web")
             telecharge(jobin)
             xtracProTax(jobin)
-            #analyse(jobin*(".ser"))
+        elseif args["action"] == 'l' # lecture - reading
+            println(stderr, "Processing " * jobin * "...  ",args["action"])
+            analyse(jobin*(".ser"))
         end
         println(stderr, "tout va bien " * jobin * ".")
      catch
