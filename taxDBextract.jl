@@ -48,17 +48,15 @@ function parse_commandline()
     s = ArgParseSettings()
 
     @add_arg_table! s begin
-#       "--list", "-l"
-#           help = "running on a list of inputs; for every two lines of the list file, the first one should be the path to the input and the second should be the path to its output"
-#           action = :store_true
-        "--action", "-a"
-            help = "les actions sont t=téléchargement x=extraction a=analyse p=picklisation python"
+
+        "--action", "-a" #analyse
+            help = "les actions sont t=téléchargement x=extraction a=analyse"
             arg_type = Char
             default = 'a'
             required = false
-        
+
         "input"
-            help = "auto = utilise un téléchargement précédent mais on peut préciser le nom du fichier taxonomy.gz"
+            help = "nom du fichier ex:taxonomy.gz"
             required = true
     end
     
@@ -497,7 +495,16 @@ end
  #    temp = temp[length.(temp) .> 0]
  #    for i = 2:2:length(temp)
      try
-        if args["action"] == 'a'
+        if args["action"] == 'd' #whole process
+            println(stderr, "Processing " * jobin * "...  ",args["action"])
+            println("copie sur web")
+            telecharge(jobin)
+        elseif args["action"] == 'x' #whole process
+            println(stderr, "Processing " * jobin * "...  ",args["action"])
+            println("copie sur web")
+            xtracProTax(jobin)
+            #analyse(jobin*(".ser"))
+        elseif args["action"] == 'a' #whole process
             println(stderr, "Processing " * jobin * "...  ",args["action"])
             println("copie sur web")
             telecharge(jobin)
@@ -509,7 +516,7 @@ end
         println(stderr, "Erreur pendant le process " * jobin * ".")
         println(stderr)
      end
- #     time julia taxDBextract.jl -a t auto
+ #     time julia taxDBextract.jl -a Position_taxonomy.gz 
 
  end
 
