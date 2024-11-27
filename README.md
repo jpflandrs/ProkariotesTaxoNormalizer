@@ -52,7 +52,18 @@ And the target (usualy "taxonomy.gz")
 
 And in most of our programs taxDBextract.jl is called from Python as this was the main programming language before 2023.
 
+## Usage
+
+    taxodict=deserialize("path_to_taxonomydict")
+    println("taxId: 2052056 is ",uniquedict["2052056"])
+
+    taxId: 2052056 is ["Bacteria-Pseudomonadota-Gammaproteobacteria-Enterobacterales-Erwiniaceae-Pantoea-Pantoea_phytobeneficialis","11"]
+    
 ## The program is not perfect :)
 
 This is rather ugly program being the first attempt I made in Julia so do not be affraid.
 Of course the commentaries in the program are mainly in french. 
+
+## License 
+
+Avalaible under the CECIL license terms.
