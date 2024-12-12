@@ -65,7 +65,7 @@ end
 
 function verifMmm_sub_mmm(putatif::String) #sous espèce
     #println(putatif)
-    if occursin("subsp.",putatif) || occursin(" pv. ",putatif)
+    if occursin("subsp.",putatif) || occursin(" pv. ",putatif) || occursin(" bv. ",putatif)
         #println(putatif)
         blocs=split(putatif,' ')
         
@@ -90,6 +90,7 @@ function verifMmm_mmm(putatif::String) #espèce
     #println("verifMmm_mmm  ",putatif)
     blocs=split(putatif,' ')
     l=length(blocs)
+    putatif=replace(putatif,'.' =>"")
     #println(SubString(putatif,2))
     #println(replace(SubString(putatif,2), " " => ""))
     if l == 2 && ("A" <= SubString(blocs[1],1:1) <= "Z" ) &&  all(c->islowercase(c) | isspace(c), replace(SubString(putatif,2), " " => "")) #on colle nom genre  et espece => Genreespece et on teste [G]enreespece
@@ -105,18 +106,20 @@ end
 
 function verifMmm(putatif::String) #genre
     #println("verifMmm ",putatif)
-    putatif=replace(putatif,'/' => '+')
+    putatif=replace(putatif,'.' =>"", '/' => '+')
     #println(putatif)
     blocs=split(putatif,' ')
     l=length(blocs)
     #println(l," " ,SubString(putatif,1:1))
     #println("# ",SubString(putatif,1:1))
+   
     if l == 1 && ("A" <= SubString(putatif,1:1) <= "Z" ) &&  all(c->islowercase(c) | isspace(c), SubString(putatif,2)) #SubString(sp[1], 2)
         #println("GENRE OU AUTRE")
         return true
     elseif l == 1 && ("A" <= SubString(putatif,2:2) <= "Z" ) &&  all(c->islowercase(c) | isspace(c), SubString(putatif,3)) #SubString(sp[1], 2)
         #println("CANDIDATUS  ",putatif)
         return true
+    
     else
         return false
     end
@@ -211,15 +214,21 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
         
         # LA SELECTION DES LIGNES PERTINENTES
         #####################################
-        if (findfirst("<taxon",line) == limites0 ) && occursin("""taxonomicDivision="PRO""",line) && (occursin("""rank="species""",line) || occursin("""rank="subspecies""",line))  #type Majeur DEBUT
+        if (findfirst("<taxon",line) == limites0 ) && occursin("""taxonomicDivision="PRO""",line) && (occursin("""rank="species""",line) || occursin("""rank="subspecies""",line)|| occursin("""rank="biotype""",line))  #type Majeur DEBUT
             ##println(line)
+            #soucis
+            #<taxon scientificName="Mycobacterium tuberculosis variant bovis" taxId="1765" parentTaxId="1773" rank="biotype" hidden="true" taxonomicDivision="PRO" geneticCode="11">
+            #  taxId   1765        local=>  Dict("PHYLUM" => "Actinomycetota", "SUPERKINGDOM" => "Bacteria", "CODE" => "11", "RANG" => "no_rank", "ORDER" => "Mycobacteriales", "TAG" => "drama", "SUBSPECIES" => "no_subspecies", "GENUS" => "Mycobacterium", "FAMILY" => "Mycobacteriaceae", "CLASS" => "Actinomycetes", "SPECIES" => "Mycobacterium tuberculosis", "rank0" => "SUBSPECIES", "nomSp0" => "Mycobacterium tuberculosis.bovis")   uniq=> Bacteria-Actinomycetota-Actinomycetes-Mycobacteriales-Mycobacteriaceae-Mycobacterium-Mycobacterium_unclassified
+            #    <taxon scientificName="Acetobacter subgen. Acetobacter" taxId="151157" rank="subgenus" hidden="false"/>
+            #<taxon scientificName="Haemophilus influenzae biotype aegyptius" taxId="725" parentTaxId="727" rank="biotype" hidden="true" taxonomicDivision="PRO" geneticCode="11">
             # Initialisations 
             localdict=Dict("TAG"=>"faux", "rank0"=>"unknown","nomSp0" => "unknown", "RANG"=>"no_rank", "SPECIES" =>"no_species", "SUBSPECIES" =>"no_subspecies","GENUS"=>"no_genus","FAMILY"=>"no_family","ORDER"=>"no_order","CLASS"=>"no_class","PHYLUM"=>"no_phylum","SUPERKINGDOM"=>"no_superkingdom","CODE"=>"unknown")
             compteur=0
             #lectures de cette premiere ligne du bloc
             taxID=recupValeur(line,"taxId=\"","\" ",true) #STRIP FAIT
-            rangNiveau0=recupValeur(line,"rank=\"","\" ",false) #STRIP FAIT
-            Niveau0Nom=recupValeur(line,"scientificName=\"","\" ",false) 
+            rangNiveau0=replace(recupValeur(line,"rank=\"","\" ",false))
+            Niveau0Nom=replace(recupValeur(line,"scientificName=\"","\" ",false)," variant " => " bv. " ," biotype " => " bv. ") #correction des sousgenres on colle par un "."
+
             #le niveau nom ne peut pas dépasser 4 mots après correction Candidatus
             #Niveau0Nom=replace(Niveau0Nom,"Candidatus " => 'c') 
             #Niveau0NomListe=split(putatifNom," ")
@@ -244,8 +253,8 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
         elseif findfirst("<taxon",line) ==limites1 && continu && occursin("cellular organisms",line)==0 && occursin("root",line)==0     #on ne lit pas les hierarchies commones à tous # cas "Candidatus Nostocoida limicola I"
             ##println(line)
             compteur=compteur+1
-            putatifRang=recupValeur(line,"rank=\"","\" ",false) #STRIP FAIT
-            putatifNom=recupValeur(line,"scientificName=\"","\" ",false) #STRIP FAIT #  CAS COUAX  <taxon scientificName="Citrobacter freundii complex" taxId="1344959" rank="species group" hidden="false"/>
+            putatifRang=replace(recupValeur(line,"rank=\"","\" ",false),"subgenus" => "genus" )#STRIP FAIT
+            putatifNom=replace(recupValeur(line,"scientificName=\"","\" ",false)," subgen. "=> "." ) #STRIP FAIT #  CAS COUAX  <taxon scientificName="Citrobacter freundii complex" taxId="1344959" rank="species group" hidden="false"/>
             Niveau0NomListe=split(putatifNom," ")
             
             
@@ -256,6 +265,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
                 #putatifNom=replace(putatifNom,"\''" => "")
                 putatifNom=strip(String(split(putatifNom,"(")[1])) #STRIP FAIT  : introduisait une espace
             end
+            #<taxon scientificName="Mycobacterium tuberculosis variant bovis" taxId="1765" parentTaxId="1773" rank="biotype" hidden="true" taxonomicDivision="PRO" geneticCode="11">
             truc=strip(String(split(putatifNom,' ')[1]))
             truc=String(truc)
             #on vérifie les cas très particuliers
@@ -265,8 +275,9 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
             #####################################
             if compteur == 1
                 #println(compteur)
-                #putatifRang=="species group")
-                if (putatifRang=="genus" || putatifRang=="species group" || putatifRang=="species subgroup") && verifMmm_mmm(localdict["nomSp0"]) && localdict["rank0"]=="SPECIES" #le nom est à 100% correct
+                #putatifRang=="species group") 
+                #|    <taxon scientificName="Acetobacter subgen. Acetobacter" taxId="151157" rank="subgenus" hidden="false"/>|
+                if (putatifRang=="genus" || putatifRang=="species group" || putatifRang=="biotype"|| putatifRang=="subgenus" || putatifRang=="species subgroup") && verifMmm_mmm(localdict["nomSp0"]) && localdict["rank0"]=="SPECIES" #le nom est à 100% correct
                     ##println("cas 1")
                     localdict["TAG"]="vrai"
                     #println("cas 1.1")
@@ -274,7 +285,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
                     localdict["SPECIES"]=localdict["nomSp0"]
                     ##println("cas 1.2")
                     
-                elseif putatifRang =="species" && verifMmm_sub_mmm(localdict["nomSp0"]) && localdict["rank0"]=="SUBSPECIES" #rank="subspecies" en 0 et species en 1 c'est bon'
+                elseif putatifRang =="species" && verifMmm_sub_mmm(localdict["nomSp0"]) && (localdict["rank0"]=="SUBSPECIES" || localdict["rank0"]=="BIOTYPE") #rank="subspecies" en 0 et species en 1 c'est bon'
                     ##println("cas 2a SSP ",line)
                     
                     localdict["SUBSPECIES"]=localdict["nomSp0"]
@@ -323,9 +334,9 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
                         localdict["TAG"]="drama"
                     end
                 else 
-                    #if putatifRang in ["genus","family","order","class","phylum","superkingdom"]
-                        #println(stderr,"drama ",uppercase(putatifRang),"   ",putatifNom)
-                    #end
+                    # if putatifRang in ["genus","family","order","class","phylum","superkingdom"]
+                    #     println(stderr,"drama ",uppercase(putatifRang),"   ",putatifNom)
+                    # end
                     localdict["TAG"]="drama"
                     localdict[uppercase(putatifRang)]=putatifNom
                 end
@@ -339,7 +350,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
                 localdict[uppercase(putatifRang)]=putatifNom
             else
                 
-                #println("MErDE     ",line)
+                #println("MErDE     ",uppercase(putatifRang),"  ",line)
             end
                 
         elseif findfirst("</lineage>",line) ==limites2  && continu #type LA FIN
@@ -421,8 +432,8 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
                 hierarchie=hierarchie*"-"*nomfinal
             end
                 uniquedict[taxID]=[hierarchie,localdict["CODE"]]
-                # println("###  ",taxID,"  @",uniquedict[taxID][1])
-                # println("     ",taxID,"          ",localdict)
+                # println("###  ",taxID,"  @ ",uniquedict[taxID][1])
+                println("  taxId   ",taxID,"        local=>  ",localdict,"   uniq=> ",uniquedict[taxID][1])
                 
                 continu=false
                 
@@ -506,11 +517,11 @@ end
  #    temp = temp[length.(temp) .> 0]
  #    for i = 2:2:length(temp)
      try
-        if args["action"] == 'd' #whole process
+        if args["action"] == 'd' 
             println(stderr, "Processing " * jobin * "...  ",args["action"])
             println("copie sur web")
             telecharge(jobin)
-        elseif args["action"] == 'x' #whole process
+        elseif args["action"] == 'x' #extract
             println(stderr, "Processing " * jobin * "...  ",args["action"])
             xtracProTax(jobin)
         elseif args["action"] == 'a' #whole process
@@ -527,7 +538,7 @@ end
         println(stderr, "Erreur pendant le process " * jobin * ".")
         println(stderr)
      end
- #     time julia taxDBextract.jl -a Position_taxonomy.gz 
+ #     time julia taxDBextract.jl -a a Position_taxonomy.gz 
 
  end
 
