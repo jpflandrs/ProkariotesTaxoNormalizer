@@ -433,7 +433,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
             end
                 uniquedict[taxID]=[hierarchie,localdict["CODE"]]
                 # println("###  ",taxID,"  @ ",uniquedict[taxID][1])
-                println("  taxId   ",taxID,"        local=>  ",localdict,"   uniq=> ",uniquedict[taxID][1])
+                #println("  taxId   ",taxID,"        local=>  ",localdict,"   uniq=> ",uniquedict[taxID][1])
                 
                 continu=false
                 
