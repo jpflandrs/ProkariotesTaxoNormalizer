@@ -76,7 +76,7 @@ The fact that you are presently reading this means that you have had
 knowledge of the [CeCILL|CeCILL-B|CeCILL-C] license and that you accept its terms.
 
 """
-
+    
 function ArgParse.parse_item(::Type{Char}, x::AbstractString)
     return x[1]
 end
@@ -249,9 +249,9 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
     putatifNom::String=""
     for line in eachline(taxoExpanded)
         
-        # LA SELECTION DES LIGNES PERTINENTES
+        # LA SELECTION DES LIGNES PERTINENTES #cas <taxon scientificName="environmental samples" ???
         #####################################
-        if (findfirst("<taxon",line) == limites0 ) && occursin("""taxonomicDivision="PRO""",line) && (occursin("""rank="species""",line) || occursin("""rank="subspecies""",line)|| occursin("""rank="biotype""",line))  #type Majeur DEBUT
+        if (findfirst("<taxon",line) == limites0 ) && (occursin("""taxonomicDivision="PRO""",line) || occursin("""taxonomicDivision="ENV""",line)) && (occursin("""rank="species""",line) || occursin("""rank="subspecies""",line)|| occursin("""rank="biotype""",line) || occursin("""scientificName="environmental samples""",line))  #type Majeur DEBUT
             ##println(line)
             #soucis
             #<taxon scientificName="Mycobacterium tuberculosis variant bovis" taxId="1765" parentTaxId="1773" rank="biotype" hidden="true" taxonomicDivision="PRO" geneticCode="11">
@@ -580,3 +580,4 @@ end
  end
 
  main()
+
