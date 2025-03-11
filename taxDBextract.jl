@@ -40,43 +40,6 @@ catch
     using FTPClient
 end
     
-"""
-taxDBextract.jl is a part of the riboDB engine
-
-Copyright or © or Copr. UCBL Lyon, France;  
-contributor : [Jean-Pierre Flandrois] ([2024/12/20])
-[JP.flandrois@univ-lyon1.fr]
-
-This software is a computer program whose purpose is to create the Web-Site PkXplore.
-
-This software is governed by the [CeCILL|CeCILL-B|CeCILL-C] license under French law and
-abiding by the rules of distribution of free software.  You can  use, 
-modify and/ or redistribute the software under the terms of the [CeCILL|CeCILL-B|CeCILL-C]
-license as circulated by CEA, CNRS and INRIA at the following URL
-"http://www.cecill.info". 
-
-As a counterpart to the access to the source code and  rights to copy,
-modify and redistribute granted by the license, users are provided only
-with a limited warranty  and the software's author,  the holder of the
-economic rights,  and the successive licensors  have only  limited
-liability. 
-
-In this respect, the user's attention is drawn to the risks associated
-with loading,  using,  modifying and/or developing or reproducing the
-software by the user in light of its specific status of free software,
-that may mean  that it is complicated to manipulate,  and  that  also
-therefore means  that it is reserved for developers  and  experienced
-professionals having in-depth computer knowledge. Users are therefore
-encouraged to load and test the software's suitability as regards their
-requirements in conditions enabling the security of their systems and/or 
-data to be ensured and,  more generally, to use and operate it in the 
-same conditions as regards security. 
-
-The fact that you are presently reading this means that you have had
-knowledge of the [CeCILL|CeCILL-B|CeCILL-C] license and that you accept its terms.
-
-"""
-    
 function ArgParse.parse_item(::Type{Char}, x::AbstractString)
     return x[1]
 end
@@ -99,6 +62,8 @@ function parse_commandline()
     
     return parse_args(s)
 end
+
+####
 
 function verifMmm_sub_mmm(putatif::String) #sous espèce
     #println(putatif)
@@ -225,7 +190,7 @@ les lignes INTERMEDIAIRE sont lues tant que continu et contiennent la hiérarchi
 les lignes de type LA FIN terminent les lectures et continu devient à nouveau false 
 
 """
-function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy 
+function xtracProTax(fichiertaxo::String)  
     #globales pour la fonction
     continu::Bool=false
     compteur::Int64=0
@@ -255,11 +220,11 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
             ##println(line)
             #soucis
             #<taxon scientificName="Mycobacterium tuberculosis variant bovis" taxId="1765" parentTaxId="1773" rank="biotype" hidden="true" taxonomicDivision="PRO" geneticCode="11">
-            #  taxId   1765        local=>  Dict("PHYLUM" => "Actinomycetota", "SUPERKINGDOM" => "Bacteria", "CODE" => "11", "RANG" => "no_rank", "ORDER" => "Mycobacteriales", "TAG" => "drama", "SUBSPECIES" => "no_subspecies", "GENUS" => "Mycobacterium", "FAMILY" => "Mycobacteriaceae", "CLASS" => "Actinomycetes", "SPECIES" => "Mycobacterium tuberculosis", "rank0" => "SUBSPECIES", "nomSp0" => "Mycobacterium tuberculosis.bovis")   uniq=> Bacteria-Actinomycetota-Actinomycetes-Mycobacteriales-Mycobacteriaceae-Mycobacterium-Mycobacterium_unclassified
+            #  taxId   1765        local=>  Dict("PHYLUM" => "Actinomycetota", "domain" => "Bacteria", "CODE" => "11", "RANG" => "no_rank", "ORDER" => "Mycobacteriales", "TAG" => "drama", "SUBSPECIES" => "no_subspecies", "GENUS" => "Mycobacterium", "FAMILY" => "Mycobacteriaceae", "CLASS" => "Actinomycetes", "SPECIES" => "Mycobacterium tuberculosis", "rank0" => "SUBSPECIES", "nomSp0" => "Mycobacterium tuberculosis.bovis")   uniq=> Bacteria-Actinomycetota-Actinomycetes-Mycobacteriales-Mycobacteriaceae-Mycobacterium-Mycobacterium_unclassified
             #    <taxon scientificName="Acetobacter subgen. Acetobacter" taxId="151157" rank="subgenus" hidden="false"/>
             #<taxon scientificName="Haemophilus influenzae biotype aegyptius" taxId="725" parentTaxId="727" rank="biotype" hidden="true" taxonomicDivision="PRO" geneticCode="11">
             # Initialisations 
-            localdict=Dict("TAG"=>"faux", "rank0"=>"unknown","nomSp0" => "unknown", "RANG"=>"no_rank", "SPECIES" =>"no_species", "SUBSPECIES" =>"no_subspecies","GENUS"=>"no_genus","FAMILY"=>"no_family","ORDER"=>"no_order","CLASS"=>"no_class","PHYLUM"=>"no_phylum","SUPERKINGDOM"=>"no_superkingdom","CODE"=>"unknown")
+            localdict=Dict("TAG"=>"faux", "rank0"=>"unknown","nomSp0" => "unknown", "RANG"=>"no_rank", "SPECIES" =>"no_species", "SUBSPECIES" =>"no_subspecies","GENUS"=>"no_genus","FAMILY"=>"no_family","ORDER"=>"no_order","CLASS"=>"no_class","PHYLUM"=>"no_phylum","DOMAIN"=>"no_domain","CODE"=>"unknown")
             compteur=0
             #lectures de cette premiere ligne du bloc
             taxID=recupValeur(line,"taxId=\"","\" ",true) #STRIP FAIT
@@ -371,7 +336,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
                         localdict["TAG"]="drama"
                     end
                 else 
-                    # if putatifRang in ["genus","family","order","class","phylum","superkingdom"]
+                    # if putatifRang in ["genus","family","order","class","phylum","domain"]
                     #     println(stderr,"drama ",uppercase(putatifRang),"   ",putatifNom)
                     # end
                     localdict["TAG"]="drama"
@@ -379,7 +344,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
                 end
                 
             #### maintenant les autres lignes avec les niveaux ####
-            elseif putatifRang in ["genus","family","order","class","phylum","superkingdom"]  #"'Thalassorhabdus' Choi et al. 2018
+            elseif putatifRang in ["genus","family","order","class","phylum","domain"]  #"'Thalassorhabdus' Choi et al. 2018
                 #println(" 236 ok ")
                 # VERIFIER !!! le traiement des unclassified et uncertae et potentiel / dans nom
 
@@ -395,7 +360,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
             try
                 #println(line)
                 #println(taxID)
-                hierarchie=localdict["SUPERKINGDOM"]*"-"*localdict["PHYLUM"]*"-"*localdict["CLASS"]*"-"*localdict["ORDER"]*"-"*localdict["FAMILY"]*"-"*localdict["GENUS"]
+                hierarchie=localdict["DOMAIN"]*"-"*localdict["PHYLUM"]*"-"*localdict["CLASS"]*"-"*localdict["ORDER"]*"-"*localdict["FAMILY"]*"-"*localdict["GENUS"]
                 #print("1 localdict ",localdict,"\n")
                 #uniquedict[taxID]
                 if localdict["TAG"] == "vrai"
@@ -404,7 +369,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
                     elseif  localdict["SPECIES"] != "no_species"
                         hierarchie=hierarchie*"-"*replace(localdict["SPECIES"],' ' =>'_')
                     end
-                elseif localdict["TAG"] == "unclassified"  #["GENUS","FAMILY","ORDER","CLASS","PHYLUM","SUPERKINGDOM"]
+                elseif localdict["TAG"] == "unclassified"  #["GENUS","FAMILY","ORDER","CLASS","PHYLUM","DOMAIN"]
                     hierarchie=hierarchie*"-"*localdict["ABSENT"]
                 elseif localdict["TAG"] == "drama" || localdict["TAG"] == "incertae"
                     
@@ -434,7 +399,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
 #                        end
                         nomfinal=localdict["PHYLUM"]*"_"*"unclassified"
                     else
-                        nomfinal=localdict["SUPERKINGDOM"]*"_"*"unclassified"
+                        nomfinal=localdict["DOMAIN"]*"_"*"unclassified"
                     end
 #                elseif localdict["TAG"] == "incertae"
                     
@@ -464,7 +429,7 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
 #                        #end                                                        #RELIQUE VERIFIER !!!
 #                        nomfinal=localdict["PHYLUM"]*"_"*"unclassified"
 #                    else
-#                        nomfinal=localdict["SUPERKINGDOM"]*"_"*"unclassified"
+#                        nomfinal=localdict["domain"]*"_"*"unclassified"
 #                    end
                 hierarchie=hierarchie*"-"*nomfinal
             end
@@ -487,29 +452,33 @@ function xtracProTax(fichiertaxo::String) #dict 2.49 deepcopy
         end
     end
     println("SERIALISE")
-    serialize(fichiertaxo*".ser", uniquedict)
+    serialize(replace(fichiertaxo,".gz" => ".ser"), uniquedict)
+    out = open(replace(fichiertaxo,".gz" => "~.pkl"),"w")
+    pickle.dump(uniquedict, out)
+    close(out)
     println("serialisation faite")
-    pickle.dump(uniquedict,open(replace(fichiertaxo*"~.pkl"), "w"))
-    println("serialise ok FIN")  #Bacillales Family X. Incertae Sedis  *unclassified Bacteroidetes Order II._unverified
+    
 end
 """
 Récupère à l'EBI le XML de la taxonomie
 """
-function telecharge(inputfile)
+function telechargetaxo(inputfile)
     println(stderr, "ftp telechargement " * inputfile * "...")
-    try
+    #try
         print("demande ftp")
         ftp = FTP(hostname="ftp.ebi.ac.uk", username="", password="")
-        print(ftp)
+        print("ftp: $ftp")
         cd(ftp, "pub/databases/ena/taxonomy")
-        print("\n----- je charge...-----")
+        print("\n----- je charge...-----$ftp")
         download(ftp, "taxonomy.xml.gz",inputfile)
         print("\n----- chargement fait -----\n")
         close(ftp)
-    catch
-        println(stderr, "Erreur pendant le process ftp \n",logftp, "\n", logdownload, "\n")
-    end
+    #catch
+        #println(stderr, "Erreur pendant le process ftp \n",logftp, "\n", logdownload, "\n")
+    #end
 end
+
+#gardé pour des tests
 function analyse(inputfile)
     println("analyse")
     uniquedict=Dict{}()
@@ -524,14 +493,15 @@ function analyse(inputfile)
     # pickle.dump(uniquedict,open(replace(inputfile,".ser" => "~.pkl"), "w"))
 end
 
-function expanddic(inputfile)
-    println("analyse",inputfile)
-    uniquedict=Dict{}()
-    uniquedict=deserialize(inputfile)
-    pickle.dump(uniquedict,open(replace(inputfile,".ser" => "~.pkl"), "w"))
-    println("serialise ok FIN") 
-    return uniquedict
-end
+
+
+
+
+
+
+
+####
+
 
 #MAIN EST INACTIF DU FAIT DE L'APPEL VIA PyCall
 
@@ -553,28 +523,28 @@ end
  #    temp = split(read(open(args["input"], "r"), String), "\n")
  #    temp = temp[length.(temp) .> 0]
  #    for i = 2:2:length(temp)
-     try
+     #try
         if args["action"] == 'd' 
             println(stderr, "Processing " * jobin * "...  ",args["action"])
             println("copie sur web")
-            telecharge(jobin)
+            telechargetaxo(jobin)
         elseif args["action"] == 'x' #extract
             println(stderr, "Processing " * jobin * "...  ",args["action"])
             xtracProTax(jobin)
         elseif args["action"] == 'a' #whole process
             println(stderr, "Processing " * jobin * "...  ",args["action"])
             println("copie sur web")
-            telecharge(jobin)
+            telechargetaxo(jobin)
             xtracProTax(jobin)
         elseif args["action"] == 'l' # lecture - reading
             println(stderr, "Processing " * jobin * "...  ",args["action"])
             analyse(jobin*(".ser"))
         end
         println(stderr, "tout va bien " * jobin * ".")
-     catch
-        println(stderr, "Erreur pendant le process " * jobin * ".")
-        println(stderr)
-     end
+     #catch
+        #println(stderr, "Erreur pendant le process " * jobin * ".")
+        #println(stderr)
+     #end
  #     time julia taxDBextract.jl -a a Position_taxonomy.gz 
 
  end
